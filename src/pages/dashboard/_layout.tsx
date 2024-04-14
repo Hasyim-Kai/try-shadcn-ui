@@ -11,10 +11,11 @@ export default function Layout() {
 
     return <AppProvider>
         <section className={`bg-slate-50/70`}>
+            <NavbarDashboard isSidebarOpen={isSidebarOpen} toggleSidebarFn={toggleSidebar} isLoggedIn={true} />
             <Sidebar sidebarOpen={isSidebarOpen} />
-            <article className={`min-h-screen ${isSidebarOpen ? "pl-64" : "pl-16"} transition-all duration-200`}>
+            <article className={`min-h-[calc(100%-4rem)] ${isSidebarOpen ? "pl-64" : "pl-16"} smooth`}>
                 {/* SIDEBAR */}
-                <NavbarDashboard isSidebarOpen={isSidebarOpen} toggleSidebarFn={toggleSidebar} isLoggedIn={true} />
+                {/* <NavbarDashboard isSidebarOpen={isSidebarOpen} toggleSidebarFn={toggleSidebar} isLoggedIn={true} /> */}
 
                 {/* OUTLET */}
                 <div className={`w-full h-full`}>

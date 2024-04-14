@@ -3,31 +3,28 @@ import NewColumnProjectModal from "@/components/global/modal/new-column-project-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import storeHelper from "@/store/storeHelper";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import StrictModeDroppable from "./Droppable";
 import MemberCard from "./member-card";
+import { IProjectStateType } from "@/utils/constant/project-type";
 
 export default function DragAndDrop() {
+    const mainBoardRef = useRef<HTMLDivElement>(null);
+    const [isMemberSidebarOpen, setIsMemberSidebarOpen] = useState(true)
+    const toggleMemberSidebar = () => setIsMemberSidebarOpen((prevState) => !prevState)
     const { toggleNewColProjectModal } = storeHelper();
-    const [columns, setColumns] = useState<any>({
-        cariPacar: {
-            id: `cariPacar`,
-            title: 'Cari Pacar',
-            maxMember: 3,
-            items: [],
-        },
-        deadProject: {
-            id: `deadProject`,
-            title: 'Dead Project',
-            maxMember: 5,
+    const [columns, setColumns] = useState<IProjectStateType>({
+        projekKematian: {
+            id: `projekKematian`,
+            title: 'Projek Kematian',
+            maxMember: 7,
             items: [],
         },
         members: {
             id: `members`,
             title: 'Members',
-            maxMember: 3,
             items: [
                 {
                     id: '1',
@@ -122,26 +119,46 @@ export default function DragAndDrop() {
         }
     }
 
+
+    const [mainBoardRefrHeight, setMainBoardRefrHeight] = useState(`100px`)
+    useEffect(() => { setMainBoardRefrHeight((mainBoardRef.current?.clientHeight ? mainBoardRef.current?.clientHeight : 100) + `px`) }, [mainBoardRef])
+    // STYLING
+    const mainBoardWidth = `15rem`
+    const mainBoardStyle = {
+        display: 'grid',
+        gridTemplateColumns: `repeat(auto-fill, minmax(0, ${mainBoardWidth}))`,
+        gap: '0.75rem',
+        width: `calc(${Object.keys(columns).length}*${mainBoardWidth} * 1.1)`,
+        height: `98%`,
+    }
+    const projectCardStyle = {
+        maxHeight: mainBoardRefrHeight,
+    }
+
     return <div className="flex relative">
         <DragDropContext onDragEnd={onDragEnd}>
-            <ContentContainer padding additonalClass="h-[calc(100vh-4.1rem)]">
-                <main className={`grid grid-cols-3 gap-3 mr-64`}>
-                    {Object.entries(columns).map(([columnId, column]) => column.id !== 'members' && <section className="border max-h-[calc(100vh-6.5rem)] rounded-md py-3 pl-3 bg-white">
-                        <div className='font-medium'>
-                            <h1 className="text-2xl">{column?.title}</h1>
-                            <p className="text-xs">Members : <span>{column?.items.length} / {column?.maxMember}</span></p>
-                        </div>
-                        <StrictModeDroppable droppableId={columnId} key={columnId} isDropDisabled={column?.items.length >= column?.maxMember}>
+            <ContentContainer padding additonalClass={`overflow-x-auto ${isMemberSidebarOpen ? 'mr-64' : 'mr-16'} smooth`}>
+                <main className={``} style={mainBoardStyle} ref={mainBoardRef}>
+                    {Object.entries(columns).map(([columnId, column]) => column.id !== 'members' &&
+                        <section style={projectCardStyle}
+                            className={`border h-fit rounded-md pb-3 bg-white shadow-lg shadow-gray-200 overflow-y-auto overflow-x-hidden`}>
+                            <div className='font-medium sticky top-0 z-40 bg-white px-3 pt-3 space-y-1.5'>
+                                <h1 className="text-xl font-semibold line-clamp-2 pr-3">{column?.title}</h1>
+                                <p className="text-xs px-2 py-1 rounded-3xl bg-white w-fit border border-gray-500">Due Date : 12/23/2024</p>
+                                <p className="text-xs px-2 py-1 rounded-3xl bg-white w-fit border border-gray-500">Members : <span>{column?.items.length} / {column?.maxMember}</span></p>
+                            </div>
+                            {/* <div className="h-[full] w-full bg-sky-300">a <br />aa <br />aa <br />aa <br />aa <br />a</div> */}
+                            <StrictModeDroppable droppableId={columnId} key={columnId} isDropDisabled={column?.items.length >= (column?.maxMember || 1)}>
 
-                            {(provided: any) => <div ref={provided.innerRef} {...provided.droppableProps}
-                                className='flex flex-col w-full pr-3 h-[91%] overflow-y-auto overflow-x-hidden'>
-                                {column?.items.map((item: any, index: number) =>
-                                    <MemberCard additionalClass="mt-3" key={item.id} item={item} index={index} />)}
-                                {provided.placeholder}
-                            </div>}
+                                {(provided: any) => <div ref={provided.innerRef} {...provided.droppableProps}
+                                    className={`flex flex-col px-3 w-full min-h-10`}>
+                                    {column?.items.map((item: any, index: number) =>
+                                        <MemberCard additionalClass="mt-3" key={item.id} item={item} index={index} />)}
+                                    {provided.placeholder}
+                                </div>}
 
-                        </StrictModeDroppable>
-                    </section>)}
+                            </StrictModeDroppable>
+                        </section>)}
 
                     {/* ADD COLUMN */}
                     <Button variant="outline" className="gap-2" onClick={toggleNewColProjectModal}>
@@ -150,24 +167,26 @@ export default function DragAndDrop() {
                 </main>
             </ContentContainer>
 
-            <section className={`fixed right-0 bg-white p-3 border-l border-sky-400 h-full max-h-full w-64`}>
-                <h1 className="font-semibold text-2xl">Members</h1>
+            {/* MEMBER SIDEBAR */}
+            <section className={`fixed bg-white p-3 border-l border-sky-400 h-full max-h-full w-64 ${isMemberSidebarOpen ? 'right-0' : '-right-48'} smooth`}>
+                <div className="flex gap-4 items-center">
+                    <Button size={"icon"} variant={"outline"} onClick={toggleMemberSidebar}>{isMemberSidebarOpen ? <><ChevronRight /> </> : <ChevronLeft />}</Button>
+                    <h1 className="font-semibold text-2xl">Members</h1>
+                </div>
                 <Input className="my-3 w-11/12" type="search" placeholder="Search" />
                 <StrictModeDroppable droppableId={columns.members.id} key={columns.members.id} isDropDisabled={false}>
-
                     {(provided: any) => <div ref={provided.innerRef} {...provided.droppableProps}
-                        className='max-h-[calc(100%-10rem)] h-full flex flex-col overflow-y-auto mb-16'>
+                        className='max-h-[calc(100%-11rem)] h-full flex flex-col overflow-y-auto mb-16'>
                         {/* <main className="flex flex-col"> */}
                         {columns.members?.items.map((item: any, index: number) =>
                             <MemberCard additionalClass="mt-3" key={item.id} item={item} index={index} />)}
                         {provided.placeholder}
                         {/* </main> */}
                     </div>}
-
                 </StrictModeDroppable>
             </section>
         </DragDropContext>
 
-        <NewColumnProjectModal />
+        <NewColumnProjectModal addColFn={setColumns} />
     </div>
 }

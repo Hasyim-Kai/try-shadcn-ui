@@ -5,15 +5,40 @@ import { useAppContext } from "@/store";
 import storeHelper from "@/store/storeHelper";
 import { IToast } from "@/utils/helper/toast";
 import { Plus } from "lucide-react";
+import { Dispatch, SetStateAction, } from "react";
+import { useForm } from "react-hook-form";
 
 interface Props {
     // open: boolean;
     // setOpen: Dispatch<SetStateAction<boolean>>
+    addColFn: Dispatch<SetStateAction<any>>
 }
 
-export default function NewColumnProjectModal({ }: Props) {
+export default function NewColumnProjectModal({ addColFn }: Props) {
     const { state } = useAppContext();
     const { toggleNewColProjectModal } = storeHelper();
+    const { register, handleSubmit, watch, formState: { errors }, } = useForm({
+        values: {
+            colName: '',
+            projectCapacity: 0
+        }
+    });
+    function addColProject() {
+        addColFn((prevState: any) => ({
+            ...prevState,
+            [watch(`colName`).trim().toLowerCase()]: {
+                id: watch(`colName`)?.trim().toLowerCase(),
+                title: watch(`colName`),
+                maxMember: watch(`projectCapacity`),
+                items: [],
+            }
+        }));
+    }
+    function onSubmit() {
+        toggleNewColProjectModal()
+        addColProject()
+        IToast(`Column ${watch(`colName`)} Has Created`, `Now you can add some task to new column`)
+    }
 
     return <Dialog open={state.isNewColModalOpen} onOpenChange={toggleNewColProjectModal}>
         <DialogContent>
@@ -26,12 +51,13 @@ export default function NewColumnProjectModal({ }: Props) {
             </DialogHeader>
 
             <section>
-                <form method="post">
-                    <Input className="mb-5" type="text" placeholder="Project's Name" />
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <Input type="text" placeholder="Project's Name" {...register("colName", { required: true })}
+                        className={`mb-3 ${errors.colName ? "outline outline-red-400" : ""}`} />
+                    <Input type="number" placeholder="Project's Capacity" {...register("projectCapacity", { required: true })}
+                        className={`mb-3 ${errors.projectCapacity ? "outline outline-red-400" : ""}`} />
 
-                    <Button className="gap-3" type="button" variant="default"
-                        // <Button className="gap-3" type="submit" variant="default"
-                        onClick={() => IToast(`Column Has Created`, `Now you can add some task to new column`)}>
+                    <Button className="gap-3" type="submit" variant="default">
                         <Plus size={16} /> Create
                     </Button>
                 </form>

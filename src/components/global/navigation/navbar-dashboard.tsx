@@ -17,17 +17,18 @@ export default function NavbarDashboard({ isSidebarOpen = true, toggleSidebarFn,
     function toggleNavbar() { setIsOpen(!isOpen) }
 
     return <>
-        <nav className="p-3 flex flex-col lg:flex-row items-center bg-white border-b border-sky-400 sticky top-0 z-50">
+        <nav className="h-[4rem] px-3 flex flex-col lg:flex-row items-center bg-white border-b border-sky-400 sticky top-0 z-50">
             <section className="flex flex-row items-center justify-between w-full lg:w-auto">
                 <Button size={"icon"} variant={"outline"} onClick={toggleSidebarFn}>{isSidebarOpen ? <><ChevronLeft /> </> : <ChevronRight />}</Button>
                 <Button size={'icon'} variant={`ghost`} onClick={toggleNavbar} className="lg:hidden"><AlignRight /></Button>
             </section>
 
             {isOpen && <section className="flex flex-col lg:flex-row items-center justify-between w-full">
-                <div className="flex gap-3 flex-col lg:flex-row lg:ml-5 text-center">
-                    <Link className=" hover:text-gray-500" to={`/`}>Home</Link>
+                <div className="flex items-center gap-3 flex-col lg:flex-row lg:ml-5 text-center">
+                    <Link to={`/`}><h1 className={`font-bold blu-gradient-text text-3xl smooth`}>Reflex</h1></Link>
+                    {/* <Link className=" hover:text-gray-500" to={`/`}>Home</Link>
                     <Link className=" hover:text-gray-500" to={`#`}>Portfolio</Link>
-                    <Link className=" hover:text-gray-500" to={`examples`}>Examples</Link>
+                    <Link className=" hover:text-gray-500" to={`examples`}>Examples</Link> */}
                 </div>
                 <div className="my-5 lg:my-0">
                     {isLoggedIn
